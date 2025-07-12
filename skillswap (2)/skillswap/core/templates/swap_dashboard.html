@@ -1,0 +1,148 @@
+<!-- core/templates/swap_dashboard.html -->
+{% extends "base.html" %}
+{% block title %}My Swap Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">My Swap Dashboard</h2>
+
+<!-- --- ADD THIS ENTIRE AI CAROUSEL SECTION AT THE TOP --- -->
+{% if ai_suggestions %}
+<div class="card mb-4 bg-light-subtle">
+    <div class="card-header border-0">
+        <h5><i class="bi bi-stars text-primary"></i> AI-Powered Suggestions</h5>
+    </div>
+    <div class="card-body">
+        <div id="aiSuggestionCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for suggestion in ai_suggestions %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="text-center p-4">
+                        <h5>{{ suggestion.user.username }}</h5>
+                        <p class="text-muted">"{{ suggestion.justification }}"</p>
+                        <a href="{% url 'user_public_profile' suggestion.user.id %}" class="btn btn-sm btn-primary">View Profile</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#aiSuggestionCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#aiSuggestionCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Display any messages -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Incoming Requests -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="bi bi-box-arrow-in-down"></i> Incoming Requests (Pending)</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for req in incoming_requests %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>Swap request from <strong>{{ req.requester.username }}</strong></span>
+            <div>
+                <form method="post" action="{% url 'update_swap_status' req.id 'accepted' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                </form>
+                <form method="post" action="{% url 'update_swap_status' req.id 'rejected' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">No new incoming requests.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Sent Requests -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="bi bi-box-arrow-up"></i> My Sent Requests</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for req in sent_requests %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>Request to <strong>{{ req.responder.username }}</strong></span>
+            {% if req.status == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+                <form method="post" action="{% url 'update_swap_status' req.id 'cancelled' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                </form>
+            {% elif req.status == 'rejected' %}
+                <span class="badge bg-danger">Rejected</span>
+            {% elif req.status == 'cancelled' %}
+                <span class="badge bg-secondary">Cancelled</span>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">You haven't sent any requests.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Active Swaps -->
+<div class="card">
+    <div class="card-header">
+        <h4><i class="bi bi-check-circle-fill text-success"></i> Active Swaps</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for swap in active_swaps %}
+        <li class="list-group-item">
+            Swap with <strong>{% if swap.requester == request.user %}{{ swap.responder.username }}{% else %}{{ swap.requester.username }}{% endif %}</strong> is active!
+            <!-- In a later phase, we'd add contact details or a chat here -->
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">No active swaps yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4><i class="bi bi-clock-history"></i> Swap History</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        {% for swap in completed_swaps %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                Swap with <strong>{% if swap.requester == request.user %}{{ swap.responder.username }}{% else %}{{ swap.requester.username }}{% endif %}</strong>
+                <br>
+                <small class="text-muted">Completed on {{ swap.updated_at|date:"F d, Y" }}</small>
+            </div>
+            <div>
+                {% if swap.requester == request.user and not swap.requester_reviewed %}
+                    <a href="{% url 'leave_review' swap.id %}" class="btn btn-warning btn-sm">Leave Feedback</a>
+                {% elif swap.responder == request.user and not swap.responder_reviewed %}
+                    <a href="{% url 'leave_review' swap.id %}" class="btn btn-warning btn-sm">Leave Feedback</a>
+                {% else %}
+                    <span class="badge bg-light text-success border border-success"><i class="bi bi-check-lg"></i> Feedback Sent</span>
+                {% endif %}
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">You have no completed swaps.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

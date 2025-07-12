@@ -1,0 +1,60 @@
+<!-- core/templates/browse_users.html -->
+{% extends "base.html" %}
+{% block title %}Browse Users{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Find a Skill Swap Partner</h2>
+
+<<form method="get" class="mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md">
+            <label for="skillSearch" class="form-label">Search by Skill</label>
+            <input type="text" id="skillSearch" name="q" class="form-control" placeholder="e.g., Photoshop, Guitar..." value="{{ search_query }}">
+        </div>
+        <div class="col-md">
+            <label for="locationSearch" class="form-label">Filter by Location</label>
+            <input type="text" id="locationSearch" name="location" class="form-control" placeholder="e.g., 'New York', 'London'" value="{{ location_query }}">
+        </div>
+        <div class="col-md-auto">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    {% for profile in profiles %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ profile.user.username }}</h5>
+                <p class="card-text text-muted"><i class="bi bi-geo-alt-fill"></i> {{ profile.location|default:"Not specified" }}</p>
+                <hr>
+                <h6>Offers:</h6>
+                <p>
+                    {% for skill in profile.skills_offered.all %}
+                        <span class="badge bg-success">{{ skill.name }}</span>
+                    {% empty %}
+                        <span class="badge bg-secondary">No skills offered</span>
+                    {% endfor %}
+                </p>
+                <h6>Wants:</h6>
+                <p>
+                    {% for skill in profile.skills_wanted.all %}
+                        <span class="badge bg-info">{{ skill.name }}</span>
+                    {% empty %}
+                        <span class="badge bg-secondary">No skills wanted</span>
+                    {% endfor %}
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'user_public_profile' profile.user.id %}" class="btn btn-outline-primary w-100">View Profile & Request Swap</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <p>No users found matching your criteria. Try a different search!</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

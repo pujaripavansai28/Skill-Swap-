@@ -1,0 +1,39 @@
+<!-- core/templates/skill_quiz.html -->
+{% extends "base.html" %}
+{% block title %}Skill Quiz: {{ skill.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-4 text-center">Skill Verification Quiz: <span class="text-primary">{{ skill.name }}</span></h2>
+        
+        {% if api_error %}
+            <div class="alert alert-danger">{{ api_error }}</div>
+        {% else %}
+        <form method="post" action="{% url 'submit_skill_quiz' %}">
+            {% csrf_token %}
+            {% for question in quiz_questions %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Question {{ forloop.counter }}:</strong> {{ question.question }}
+                </div>
+                <div class="card-body">
+                    {% for option in question.options %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="question_{{ forloop.parentloop.counter0 }}" id="q{{ forloop.parentloop.counter0 }}o{{ forloop.counter0 }}" value="{{ option }}" required>
+                        <label class="form-check-label" for="q{{ forloop.parentloop.counter0 }}o{{ forloop.counter0 }}">
+                            {{ option }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            <div class="d-grid">
+                <button type="submit" class="btn btn-lg btn-success">Submit Quiz</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

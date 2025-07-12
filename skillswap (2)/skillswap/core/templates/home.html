@@ -1,0 +1,85 @@
+<!-- core/templates/home.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<!-- We remove the default block content and replace it with our custom landing page -->
+
+<!-- 1. Hero Section: The main welcome area -->
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-4 fw-bold text-body-emphasis">Unlock Your Potential. <span class="text-primary">Swap Your Skills.</span></h1>
+    <div class="col-lg-6 mx-auto">
+      <p class="lead mb-4">
+        Join a vibrant community of learners, creators, and experts. Trade skills you have for skills you want, from coding to cooking, completely free.
+      </p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-4 gap-3">Get Started Now</a>
+        <a href="{% url 'browse_users' %}" class="btn btn-outline-secondary btn-lg px-4">Browse Skills</a>
+      </div>
+    </div>
+</div>
+
+<!-- 2. "How It Works" / Features Section -->
+<div class="container px-4 py-5" id="how-it-works">
+    <h2 class="pb-2 border-bottom text-center">How It Works</h2>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+      
+      <!-- Feature 1: Profile -->
+      <div class="col d-flex align-items-start">
+        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+          <i class="bi bi-person-badge" style="width: 1em; height: 1em;"></i>
+        </div>
+        <div>
+          <h3 class="fs-2 text-body-emphasis">Create Your Profile</h3>
+          <p>List the skills you're willing to teach or offer, and add the skills you're eager to learn. Make your profile public and set your availability.</p>
+        </div>
+      </div>
+
+      <!-- Feature 2: Find a Match -->
+      <div class="col d-flex align-items-start">
+        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+            <i class="bi bi-search-heart" style="width: 1em; height: 1em;"></i>
+        </div>
+        <div>
+          <h3 class="fs-2 text-body-emphasis">Find a Match</h3>
+          <p>Browse our community of users or use our powerful search to find someone with the skill you want. View their profile to see if it's a good fit.</p>
+        </div>
+      </div>
+      
+      <!-- Feature 3: AI-Powered Swapping -->
+      <div class="col d-flex align-items-start">
+        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+            <i class="bi bi-stars" style="width: 1em; height: 1em;"></i>
+        </div>
+        <div>
+          <h3 class="fs-2 text-body-emphasis">Swap with AI</h3>
+          <p>Let our AI Matchmaker do the hard work! It analyzes your profile and suggests the best potential swap partners for you based on a perfect match.</p>
+        </div>
+      </div>
+
+    </div>
+</div>
+
+<!-- 3. Final Call to Action -->
+<div class="container">
+    <div class="p-5 text-center bg-body-tertiary rounded-3">
+      <i class="bi bi-arrow-repeat" style="font-size: 3rem; color: var(--bs-primary);"></i>
+      <h1 class="text-body-emphasis mt-3">Ready to Start Swapping?</h1>
+      <p class="col-lg-8 mx-auto fs-5 text-muted">
+        Your next skill is just one swap away. Join the SkillSwap community today and start your journey of growth.
+      </p>
+      <a href="{% url 'signup' %}" class="btn btn-primary btn-lg mt-3">
+        Join for Free
+      </a>
+    </div>
+</div>
+
+<!-- Add some custom styling for the icons -->
+<style>
+    .icon-square {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillSwap | {% block title %}{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- THEME SWITCHER SCRIPT -->
+    <script>
+      const getStoredTheme = () => localStorage.getItem('theme');
+      const setStoredTheme = theme => localStorage.setItem('theme', theme);
+      const getPreferredTheme = () => {
+        const storedTheme = getStoredTheme();
+        if (storedTheme) return storedTheme;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      const setTheme = theme => {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        setStoredTheme(theme);
+      }
+      setTheme(getPreferredTheme());
+    </script>
+
+    <!-- NAVBAR (RESTORED AND CORRECT) -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">
+          <i class="bi bi-arrow-repeat"></i> SkillSwap
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'browse_users' %}active{% endif %}" href="{% url 'browse_users' %}">Browse Swaps</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'ai_matchmaker' %}active{% endif %}" href="{% url 'ai_matchmaker' %}">
+                    <i class="bi bi-stars"></i> AI Matcher
+                </a>
+            </li>
+          </ul>
+
+          <div class="d-flex align-items-center">
+            <div class="dropdown me-2">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-circle-half"></i> Theme
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+                <li><button class="dropdown-item" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i> Light</button></li>
+                <li><button class="dropdown-item" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark</button></li>
+              </ul>
+            </div>
+            {% if user.is_authenticated %}
+              <div class="dropdown">
+                <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Welcome, {{ user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end text-small">
+                  <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+                  <li><a class="dropdown-item" href="{% url 'dashboard' %}">My Dashboard</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="dropdown-item">Logout</button></form></li>
+                </ul>
+              </div>
+            {% else %}
+              <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+              <a href="{% url 'signup' %}" class="btn btn-outline-secondary ms-2">Sign Up</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="container mt-4 main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer mt-auto py-3 bg-body-tertiary border-top">
+      <div class="container text-center">
+        <span class="text-body-secondary">© 2024 SkillSwap Platform. Built for a Hackathon.</span>
+      </div>
+    </footer>
+
+    <!-- --- AI CHATBOT HTML & STYLES --- -->
+    {% if user.is_authenticated %}
+    <div id="chatbot-container">
+        <div id="chatbot-widget" class="collapsed">
+            <div id="chatbot-header" class="bg-primary text-white">
+                <span><i class="bi bi-robot"></i> SkillSwap Helper</span>
+                <button id="chatbot-close-btn">×</button>
+            </div>
+            <div id="chatbot-body">
+                <div id="chatbot-messages"><div class="message bot">Hello {{ user.username }}! How can I help?</div></div>
+                <div id="chatbot-input-container">
+                    <input type="text" id="chatbot-input" placeholder="Ask a question..." autocomplete="off">
+                    <button id="chatbot-send-btn"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </div>
+        </div>
+        <button id="chatbot-toggle-btn" class="btn btn-primary btn-lg rounded-circle shadow"><i class="bi bi-chat-quote-fill"></i></button>
+    </div>
+    <style>
+        #chatbot-container { position: fixed; bottom: 20px; right: 20px; z-index: 1050; }
+        #chatbot-toggle-btn { width: 60px; height: 60px; font-size: 1.5rem; }
+        #chatbot-widget { width: 350px; height: 500px; background: var(--bs-body-bg); border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; transition: all 0.3s ease-in-out; transform: scale(0); transform-origin: bottom right; }
+        #chatbot-widget.expanded { transform: scale(1); }
+        #chatbot-header { padding: 10px 15px; border-top-left-radius: 15px; border-top-right-radius: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        #chatbot-close-btn { background: none; border: none; color: white; font-size: 1.5rem; }
+        #chatbot-body { flex-grow: 1; display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
+        #chatbot-messages { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 5px; }
+        .message { padding: 8px 12px; border-radius: 18px; max-width: 80%; word-wrap: break-word; }
+        .message.user { background: var(--bs-primary); color: white; align-self: flex-end; }
+        .message.bot { background: var(--bs-secondary-bg); color: var(--bs-body-color); align-self: flex-start; }
+        #chatbot-input-container { display: flex; padding-top: 10px; border-top: 1px solid var(--bs-border-color); }
+        #chatbot-input { flex-grow: 1; border: none; outline: none; background: transparent; padding: 0 10px; }
+        #chatbot-send-btn { background: none; border: none; color: var(--bs-primary); font-size: 1.2rem; }
+    </style>
+    {% endif %}
+
+    <!-- JAVASCRIPT SECTION -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    {% if user.is_authenticated %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const chatbotWidget = document.getElementById('chatbot-widget');
+        if (chatbotWidget) {
+            const toggleBtn = document.getElementById('chatbot-toggle-btn');
+            const closeBtn = document.getElementById('chatbot-close-btn');
+            const sendBtn = document.getElementById('chatbot-send-btn');
+            const chatInput = document.getElementById('chatbot-input');
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const chatbotURL = "{% url 'ai_chatbot' %}";
+            const csrfToken = "{{ csrf_token }}";
+
+            const toggleChatbot = () => chatbotWidget.classList.toggle('expanded');
+            if(toggleBtn) toggleBtn.addEventListener('click', toggleChatbot);
+            if(closeBtn) closeBtn.addEventListener('click', toggleChatbot);
+
+            const addMessage = (text, sender) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender);
+                const linkedText = text.replace(/\/browse\/\?q=([a-zA-Z0-9\s]+)/g, '<a href="/browse/?q=$1">Search for "$1"</a>');
+                messageDiv.innerHTML = linkedText;
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+
+            const sendMessage = async () => {
+                const messageText = chatInput.value.trim();
+                if (!messageText) return;
+                addMessage(messageText, 'user');
+                chatInput.value = '';
+                try {
+                    const response = await fetch(chatbotURL, { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }, body: JSON.stringify({ message: messageText }) });
+                    const data = await response.json();
+                    addMessage(data.reply, 'bot');
+                } catch (error) { addMessage('Sorry, I am having trouble connecting.', 'bot'); }
+            };
+
+            if(sendBtn) sendBtn.addEventListener('click', sendMessage);
+            if(chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        }
+      });
+    </script>
+    {% endif %}
+
+    <!-- This block is where page-specific scripts will be injected -->
+    {% block scripts %}{% endblock %}
+
+  </body>
+</html>

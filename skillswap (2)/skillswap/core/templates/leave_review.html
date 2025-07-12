@@ -1,0 +1,67 @@
+<!-- core/templates/leave_review.html -->
+{% extends "base.html" %}
+{% block title %}Leave a Review{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Reviewing your swap with <span class="text-primary">{{ reviewee.username }}</span></h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Star Rating -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.rating.label }}</label>
+                        <div id="star-rating" class="d-flex">
+                            {% for radio in form.rating %}
+                            <div class="form-check form-check-inline me-1">
+                                {{ radio.tag }}
+                                <label for="{{ radio.id_for_label }}" class="star-label">
+                                    <i class="bi bi-star"></i>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label for="{{ form.comment.id_for_label }}" class="form-label">{{ form.comment.label }}</label>
+                        {{ form.comment }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Some CSS for attractive stars -->
+<style>
+    #star-rating input[type="radio"] {
+        display: none; /* Hide the actual radio button */
+    }
+    #star-rating .star-label {
+        font-size: 2rem;
+        color: #adb5bd; /* Default empty star color */
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    /* Style stars on hover */
+    #star-rating:hover .star-label {
+        color: #ffc107; /* Yellow */
+    }
+    #star-rating .star-label:hover ~ .star-label {
+        color: #adb5bd;
+    }
+    /* Style stars when a radio is checked */
+    #star-rating input[type="radio"]:checked ~ .star-label {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
