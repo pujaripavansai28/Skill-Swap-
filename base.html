@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SkillSwap | {% block title %}{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- THEME SWITCHER SCRIPT -->
+    <script>
+      const getStoredTheme = () => localStorage.getItem('theme');
+      const setStoredTheme = theme => localStorage.setItem('theme', theme);
+
+      const getPreferredTheme = () => {
+        const storedTheme = getStoredTheme();
+        if (storedTheme) return storedTheme;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      const setTheme = theme => {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        setStoredTheme(theme);
+      }
+
+      setTheme(getPreferredTheme());
+    </script>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">
+          <i class="bi bi-arrow-repeat"></i> SkillSwap
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" aria-current="page" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'browse_users' %}">Browse Swaps</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold" href="{% url 'ai_matchmaker' %}">
+                    <i class="bi bi-stars"></i> AI Matcher
+                </a>
+            </li>
+          </ul>
+
+          <div class="d-flex align-items-center">
+            <!-- Theme Switcher Dropdown -->
+            <div class="dropdown me-2">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-circle-half"></i> Theme
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="themeDropdown">
+                <li><button class="dropdown-item" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i> Light</button></li>
+                <li><button class="dropdown-item" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark</button></li>
+              </ul>
+            </div>
+
+            <!-- Dynamic Auth Section -->
+            {% if user.is_authenticated %}
+              <div class="dropdown">
+                <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Welcome, {{ user.username }}
+                </a>
+                <ul class="dropdown-menu text-small">
+                  <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+                  <li><a class="dropdown-item" href="{% url 'dashboard' %}">My Dashboard</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+            {% else %}
+              <a href="{% url 'login' %}" class="btn btn-primary ms-3">Login</a>
+              <a href="{% url 'signup' %}" class="btn btn-outline-secondary ms-2">Sign Up</a>
+            {% endif %}
+            <!-- End Dynamic Auth Section -->
+
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="container mt-4 main-content">
+      {% block content %}
+        <div class="p-5 mb-4 bg-body-tertiary rounded-3">
+          <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to SkillSwap</h1>
+            <p class="col-md-8 fs-4">This is the default homepage. In the next phases, we'll build out the real features here.</p>
+            <a href="/admin/" class="btn btn-primary btn-lg" type="button">Go to Admin Panel</a>
+          </div>
+        </div>
+      {% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer mt-auto py-3 bg-body-tertiary border-top">
+      <div class="container text-center">
+        <span class="text-body-secondary">© 2024 SkillSwap Platform. Built for a Hackathon.</span>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+</html>
