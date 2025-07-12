@@ -1,0 +1,100 @@
+<!-- core/templates/profile.html -->
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Manage Your Profile</h2>
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Non-skill fields -->
+            <div class="mb-3">
+                <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
+                {{ form.location }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.availability.id_for_label }}" class="form-label">{{ form.availability.label }}</label>
+                {{ form.availability }}
+            </div>
+            <div class="form-check mb-3">
+                {{ form.is_public }}
+                <label class="form-check-label" for="{{ form.is_public.id_for_label }}">{{ form.is_public.help_text }}</label>
+            </div>
+            
+            <hr>
+
+            <!-- Skill fields -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Skills I Offer</h5>
+                    <div id="skills-offered-container" class="border p-2 rounded" style="height: 200px; overflow-y: auto;">
+                        {{ form.skills_offered }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Skills I Want</h5>
+                    <div id="skills-wanted-container" class="border p-2 rounded" style="height: 200px; overflow-y: auto;">
+                        {{ form.skills_wanted }}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-4">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- AI Skill Suggester Section -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-robot"></i> AI Skill Suggester
+    </div>
+    <div class="card-body">
+        <p>Not sure how to phrase a skill? Type a keyword and get suggestions!</p>
+        <div class="input-group">
+            <input type="text" id="skill-suggestion-input" class="form-control" placeholder="e.g., 'drawing' or 'spreadsheets'">
+            <button class="btn btn-outline-secondary" type="button" id="get-suggestions-btn">Get Suggestions</button>
+        </div>
+        <div id="suggestions-area" class="mt-3">
+            <!-- AI suggestions will appear here -->
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Small CSS improvement for checkbox lists */
+    #skills-offered-container label, #skills-wanted-container label {
+        display: block;
+        margin-left: 5px;
+    }
+</style>
+
+<script>
+document.getElementById('get-suggestions-btn').addEventListener('click', function() {
+    const query = document.getElementById('skill-suggestion-input').value;
+    const suggestionsArea = document.getElementById('suggestions-area');
+    suggestionsArea.innerHTML = '<span class="text-muted">Asking the AI...</span>';
+
+    // Use the URL name we defined in urls.py
+    fetch(`{% url 'suggest-skills' %}?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.suggestions && data.suggestions.length > 0) {
+                let html = '<p>Click to add to your "Skills I Offer":</p>';
+                data.suggestions.forEach(skill => {
+                    // For a hackathon, we'll just log it. A full implementation would add it to the form.
+                    html += `<button type="button" class="btn btn-sm btn-outline-success m-1">${skill}</button>`;
+                });
+                suggestionsArea.innerHTML = html;
+            } else {
+                suggestionsArea.innerHTML = '<span class="text-danger">No suggestions found or API error.</span>';
+            }
+        })
+        .catch(error => {
+            suggestionsArea.innerHTML = `<span class="text-danger">Error: ${error}</span>`;
+        });
+});
+</script>
+{% endblock %}
